@@ -165,7 +165,7 @@ export default function StatementCard({ file, isOpen, isDeleting, onToggle, onDe
           className="transition-all duration-300"
           style={{ borderTop: "1px solid var(--kash-border)" }}
         >
-          <TransactionTable transactions={file.transactions} />
+          <TransactionTable transactions={file.transactions} fileId={file.id} />
         </div>
       )}
     </div>

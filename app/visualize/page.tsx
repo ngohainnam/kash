@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { FileSpreadsheet, BarChart2, Loader2, ChevronDown } from "lucide-react";
+import { FileSpreadsheet, BarChart2, Loader2, ChevronDown, Download } from "lucide-react";
 import type { CsvFileRecord } from "@/app/api/files/route";
 import type { Transaction } from "@/app/api/upload/route";
 import { categorizeTransactions } from "@/lib/categorize";
@@ -62,6 +62,7 @@ export default function VisualizePage() {
   const [files, setFiles] = useState<CsvFileRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const fetchFiles = useCallback(async () => {
     setLoading(true);
@@ -87,27 +88,134 @@ export default function VisualizePage() {
   const totalExpense = txs.filter((t) => t.amount < 0).reduce((s, t) => s + Math.abs(t.amount), 0);
   const net = totalIncome - totalExpense;
 
+  async function exportPDF() {
+    if (!selected) return;
+    setPdfLoading(true);
+    try {
+      const { default: jsPDF } = await import("jspdf");
+      const { default: autoTable } = await import("jspdf-autotable");
+      const doc = new jsPDF();
+
+      // Title
+      doc.setFontSize(18);
+      doc.setTextColor(40, 40, 40);
+      doc.text("KASH Financial Report", 14, 20);
+      doc.setFontSize(10);
+      doc.setTextColor(120, 120, 120);
+      doc.text(`Statement: ${selected.fileName}`, 14, 28);
+      doc.text(`Generated: ${new Date().toLocaleDateString("en-AU", { day: "numeric", month: "long", year: "numeric" })}`, 14, 34);
+
+      // Summary table
+      doc.setFontSize(12);
+      doc.setTextColor(40, 40, 40);
+      doc.text("Summary", 14, 46);
+      autoTable(doc, {
+        startY: 50,
+        head: [["Metric", "Amount"]],
+        body: [
+          ["Total Income", `$${totalIncome.toFixed(2)}`],
+          ["Total Expenses", `$${totalExpense.toFixed(2)}`],
+          ["Net Balance", `${net >= 0 ? "+" : "-"}$${Math.abs(net).toFixed(2)}`],
+          ["Transactions", String(txs.length)],
+        ],
+        styles: { fontSize: 9 },
+        headStyles: { fillColor: [59, 130, 246] },
+        margin: { left: 14, right: 14 },
+      });
+
+      // Category breakdown
+      const lastY1 = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable?.finalY ?? 90;
+      doc.text("Spending by Category", 14, lastY1 + 12);
+      autoTable(doc, {
+        startY: lastY1 + 16,
+        head: [["Category", "Amount", "% of Expenses"]],
+        body: categoryData.map((row) => [
+          row.name,
+          `$${row.value.toFixed(2)}`,
+          totalExpense > 0 ? `${((row.value / totalExpense) * 100).toFixed(1)}%` : "0%",
+        ]),
+        styles: { fontSize: 9 },
+        headStyles: { fillColor: [59, 130, 246] },
+        margin: { left: 14, right: 14 },
+      });
+
+      // Monthly data
+      const lastY2 = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable?.finalY ?? 150;
+      if (lastY2 + 30 > 270) doc.addPage();
+      const monthStartY = lastY2 + 30 > 270 ? 20 : lastY2 + 12;
+      doc.text("Monthly Income vs Expenses", 14, monthStartY);
+      autoTable(doc, {
+        startY: monthStartY + 4,
+        head: [["Month", "Income", "Expenses", "Net"]],
+        body: monthlyData.map((row) => [
+          row.month,
+          `$${row.income.toFixed(2)}`,
+          `$${row.expense.toFixed(2)}`,
+          `${row.income - row.expense >= 0 ? "+" : "-"}$${Math.abs(row.income - row.expense).toFixed(2)}`,
+        ]),
+        styles: { fontSize: 9 },
+        headStyles: { fillColor: [59, 130, 246] },
+        margin: { left: 14, right: 14 },
+      });
+
+      // Transactions (first 100)
+      doc.addPage();
+      doc.setFontSize(12);
+      doc.text("Transaction List (first 100)", 14, 20);
+      autoTable(doc, {
+        startY: 24,
+        head: [["Date", "Description", "Category", "Amount"]],
+        body: txs.slice(0, 100).map((t) => [
+          t.date,
+          t.description.slice(0, 45),
+          t.category ?? "—",
+          `${t.amount >= 0 ? "+" : "-"}$${Math.abs(t.amount).toFixed(2)}`,
+        ]),
+        styles: { fontSize: 8 },
+        headStyles: { fillColor: [59, 130, 246] },
+        margin: { left: 14, right: 14 },
+      });
+
+      doc.save(`kash-report-${selected.fileName.replace(/\.csv$/i, "")}.pdf`);
+    } finally {
+      setPdfLoading(false);
+    }
+  }
+
   return (
     <div style={{ minHeight: "100vh", background: "var(--bg-base)" }}>
       <div style={{ maxWidth: "72rem", margin: "0 auto", padding: "3rem 1.5rem" }}>
 
         {/* ── Page header ── */}
         <div className="mb-8">
-          <div className="flex items-center gap-3 mb-1">
-            <div
-              className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-              style={{ background: "var(--accent-glow)" }}
-            >
-              <BarChart2 size={18} style={{ color: "var(--accent)" }} />
+          <div className="flex items-center justify-between gap-3 mb-1">
+            <div className="flex items-center gap-3">
+              <div
+                className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                style={{ background: "var(--accent-glow)" }}
+              >
+                <BarChart2 size={18} style={{ color: "var(--accent)" }} />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold" style={{ color: "var(--text-primary)" }}>
+                  Visualize
+                </h1>
+                <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+                  Charts and breakdowns from your uploaded statements
+                </p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-xl font-bold" style={{ color: "var(--text-primary)" }}>
-                Visualize
-              </h1>
-              <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
-                Charts and breakdowns from your uploaded statements
-              </p>
-            </div>
+            {selected && (
+              <button
+                onClick={() => void exportPDF()}
+                disabled={pdfLoading}
+                className="flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-xl transition-all flex-shrink-0"
+                style={{ background: "var(--bg-surface)", border: "1px solid var(--kash-border)", color: "var(--text-primary)", opacity: pdfLoading ? 0.7 : 1 }}
+              >
+                {pdfLoading ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
+                {pdfLoading ? "Generating…" : "Download PDF"}
+              </button>
+            )}
           </div>
         </div>
 

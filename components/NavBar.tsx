@@ -3,11 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  LayoutDashboard,
   FolderOpen,
   MessageSquare,
   TrendingUp,
   BarChart2,
+  Target,
+  Activity,
 } from "lucide-react";
 import {
   SignInButton,
@@ -18,10 +19,12 @@ import {
 import { Button } from "@/components/ui/button";
 
 const NAV = [
-  { href: "/", icon: LayoutDashboard, label: "Home" },
+  { href: "/", icon: TrendingUp, label: "Home" },
+  { href: "/dashboard", icon: Activity, label: "Dashboard" },
   { href: "/files", icon: FolderOpen, label: "Files" },
   { href: "/chats", icon: MessageSquare, label: "Chats" },
   { href: "/visualize", icon: BarChart2, label: "Visualize" },
+  { href: "/budget", icon: Target, label: "Budget" },
 ];
 
 export default function Navbar() {

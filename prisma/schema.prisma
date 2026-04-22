@@ -8,11 +8,36 @@ datasource db {
 }
 
 model CsvFile {
-  id           String   @id @default(cuid())
+  id           String            @id @default(cuid())
   userId       String
   fileName     String
-  uploadedAt   DateTime @default(now())
-  transactions String   // JSON string of Transaction[]
+  uploadedAt   DateTime          @default(now())
+  transactions String            // JSON string of Transaction[]
+  notes        TransactionNote[]
 
   @@index([userId])
+}
+
+model TransactionNote {
+  id        String   @id @default(cuid())
+  userId    String
+  fileId    String
+  txIndex   Int
+  note      String
+  createdAt DateTime @default(now())
+  file      CsvFile  @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  @@index([userId, fileId])
+  @@unique([userId, fileId, txIndex])
+}
+
+model Budget {
+  id           String @id @default(cuid())
+  userId       String
+  category     String
+  monthlyLimit Float
+  month        String // "2026-04" format or "default"
+
+  @@index([userId])
+  @@unique([userId, category, month])
 }

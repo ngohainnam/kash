@@ -1,12 +1,12 @@
 <div align="center">
 
-# ğŸ’¸ KASH
+# ?? KASH
 
 ### AI-Powered Personal Finance Dashboard
 
 **Know exactly where every dollar goes.**
 
-KASH turns your bank CSV export into instant, actionable insights â€” spending breakdowns, income tracking, and an AI assistant that answers plain-English questions about your money. No accounts. No cloud. No lock-in.
+KASH turns your bank CSV export into instant, actionable insights — spending breakdowns, income tracking, budget tracking, and an AI assistant that answers plain-English questions about your money.
 
 </div>
 
@@ -16,33 +16,42 @@ KASH turns your bank CSV export into instant, actionable insights â€” spending b
 
 Most people export their bank statements and do nothing with them. KASH changes that.
 
-Upload a CSV, and within seconds you get a full picture of your finances: total income, total expenses, net balance, and every transaction neatly categorised. Then ask the built-in AI anything â€” *"How much did I spend on food last month?"* or *"What's my biggest expense category?"* â€” and get a clear, human answer in seconds.
+Upload a CSV, and within seconds you get a full picture of your finances: total income, total expenses, net balance, and every transaction neatly categorised. Set monthly budgets per category, add personal notes to transactions, visualise your spending with charts, and ask the built-in AI anything — *"How much did I spend on food last month?"* or *"What's my biggest expense category?"* — and get a clear, human answer in seconds.
 
-Everything runs in your browser and on your own server. Your financial data never leaves your control.
+Your data is secured behind authentication and stored in your own database.
 
 ---
 
 ## Features
 
-### ğŸ“‚ Smart CSV Import
+### ?? Smart CSV Import
 Drag and drop any bank statement CSV. KASH automatically detects the `Date`, `Description`, and `Amount` columns, strips currency symbols, skips invalid rows, and loads your transactions instantly.
 
-### ğŸ“Š Live Analytics
+### ?? Live Analytics & Dashboard
 The moment your file loads, KASH calculates:
-- **Total Income** â€” sum of all positive transactions
-- **Total Expenses** â€” sum of all outgoings
-- **Net Balance** â€” your actual bottom line for the period
+- **Total Income** — sum of all positive transactions
+- **Total Expenses** — sum of all outgoings
+- **Net Balance** — your actual bottom line for the period
 
-### ğŸ·ï¸ Automatic Categorisation
-Every transaction is tagged automatically â€” Groceries, Dining, Entertainment, Utilities, Shopping, Transport, Healthcare, Travel, and more. Refunds are flagged as Income. The rules live in [`lib/categorize.ts`](lib/categorize.ts) and are easy to extend.
+### ?? Visualisations
+Interactive charts give you a richer view of your spending:
+- **Monthly Bar Chart** — income vs expenses side-by-side across months
+- **Spending Pie Chart** — breakdown of expenses by category
 
-### ğŸ¤– AI Chat (Gemini-powered)
-Ask the AI anything about your transactions in natural language. It has full context of your statement â€” dates, amounts, categories, top expenses â€” and responds with clear, concise answers. Powered by Google Gemini.
+### ??? Automatic Categorisation
+Every transaction is tagged automatically — Groceries, Dining, Entertainment, Utilities, Shopping, Transport, Healthcare, Travel, and more. Refunds are flagged as Income. The rules live in [`lib/categorize.ts`](lib/categorize.ts) and are easy to extend.
 
-### ğŸ”’ Private by Default
-- No sign-up required to explore the app
-- CSV parsing happens server-side in your own Next.js instance
-- Nothing is stored permanently unless you configure a database
+### ?? Budget Tracking
+Set monthly spending limits per category. KASH compares your actual spend against your budget and shows you where you're over or under — so you stay in control before the month ends.
+
+### ??? Transaction Notes
+Add personal notes to individual transactions for context — e.g. *"work lunch reimbursed"* or *"annual subscription"*. Notes are stored per-user and persist across sessions.
+
+### ?? AI Chat (Gemini-powered)
+Ask the AI anything about your transactions in natural language. It has full context of your statement — dates, amounts, categories, top expenses — and responds with clear, concise answers. Powered by Google Gemini.
+
+### ?? Authentication
+Secure sign-in and sign-up powered by [Clerk](https://clerk.com). Each user's files, notes, and budgets are fully isolated.
 
 ---
 
@@ -50,11 +59,14 @@ Ask the AI anything about your transactions in natural language. It has full con
 
 | Layer | Technology |
 |---|---|
-| Framework | Next.js 16 (App Router) |
+| Framework | Next.js (App Router) |
 | Language | TypeScript |
 | Styling | Tailwind CSS v4 + shadcn/ui |
+| Auth | Clerk |
+| Database | PostgreSQL + Prisma ORM |
 | CSV Parsing | PapaParse |
 | AI | Google Gemini (`@google/genai`) |
+| Charts | Recharts |
 | Icons | Lucide React |
 | Font | Geist (via `next/font`) |
 
@@ -65,8 +77,8 @@ Ask the AI anything about your transactions in natural language. It has full con
 ### 1. Clone and install
 
 ```bash
-git clone <your-repo-url>
-cd bankcheck
+git clone https://github.com/ngohainnam/kash.git
+cd kash
 npm install
 ```
 
@@ -75,12 +87,28 @@ npm install
 Create a `.env.local` file in the project root:
 
 ```env
-GEMINI_API_KEY=your_google_gemini_api_key_here
+# Google Gemini AI
+GEMINI_API_KEY=your_google_gemini_api_key
+
+# Clerk Authentication
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
+CLERK_SECRET_KEY=your_clerk_secret_key
+
+# Database (PostgreSQL)
+DATABASE_URL=your_postgresql_connection_string
 ```
 
-To get a Gemini API key, visit [Google AI Studio](https://aistudio.google.com/app/apikey).
+- **Gemini API key** — [Google AI Studio](https://aistudio.google.com/app/apikey)
+- **Clerk keys** — [Clerk Dashboard](https://dashboard.clerk.com)
+- **Database** — any PostgreSQL provider (e.g. [Neon](https://neon.tech), Supabase, Railway)
 
-### 3. Run the development server
+### 3. Set up the database
+
+```bash
+npx prisma db push
+```
+
+### 4. Run the development server
 
 ```bash
 npm run dev
@@ -92,26 +120,38 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## How to Use KASH
 
-### Step 1 â€” Upload your bank statement
-1. Navigate to the **Files** page from the top navbar (or click **Upload Statement** on the home page).
+### Step 1 — Sign in
+Create an account or sign in via the sign-in page. All your data (files, budgets, notes) is tied to your account.
+
+### Step 2 — Upload your bank statement
+1. Navigate to the **Files** page from the navbar.
 2. Drag and drop your CSV file onto the upload area, or click to browse.
 3. KASH accepts any CSV with at least three columns: **Date**, **Description**, and **Amount**.
 
 > **Tip:** Most banks let you export a CSV from the transaction history section of their online banking portal.
 
-### Step 2 â€” Review your transactions
+### Step 3 — Review your transactions
 After upload, your transactions appear in a table:
-- Dates and descriptions are shown as-is from your file.
-- Amounts are colour-coded â€” **green** for income, **red** for expenses.
+- Amounts are colour-coded — **green** for income, **red** for expenses.
 - Each row is automatically tagged with a spending category.
+- Click any row to add or edit a personal note.
 
 The summary cards at the top show your **total income**, **total expenses**, and **net balance** at a glance.
 
-### Step 3 â€” Ask the AI
-1. Type a question in the chat bar at the bottom of the screen â€” or navigate to the **Chats** page.
+### Step 4 — Explore the Dashboard & Visualisations
+- **Dashboard** — overview of your financial health across all uploaded files.
+- **Visualise** — bar and pie charts breaking down your spending by month and category.
+
+### Step 5 — Set Budgets
+1. Navigate to the **Budget** page.
+2. Set a monthly spending limit for any category.
+3. KASH compares your actual spend against your limits in real time.
+
+### Step 6 — Ask the AI
+1. Type a question in the chat bar or navigate to the **Chats** page.
 2. The AI has full context of your uploaded transactions and will answer in plain English.
 
-**Example questions you can ask:**
+**Example questions:**
 - *"What did I spend the most on this month?"*
 - *"How much did I earn vs spend?"*
 - *"List all my subscriptions."*
@@ -123,26 +163,42 @@ The summary cards at the top show your **total income**, **total expenses**, and
 ## Project Structure
 
 ```
-bankcheck/
-â”œâ”€â”€ app/
-â”‚   â”œâ”€â”€ api/
-â”‚   â”‚   â”œâ”€â”€ upload/route.ts     # CSV parsing endpoint
-â”‚   â”‚   â””â”€â”€ chat/route.ts       # Gemini AI chat endpoint
-â”‚   â”œâ”€â”€ files/page.tsx          # File upload & transaction table
-â”‚   â”œâ”€â”€ chats/page.tsx          # AI chat interface
-â”‚   â”œâ”€â”€ page.tsx                # Landing / home page
-â”‚   â”œâ”€â”€ layout.tsx              # Root layout (Navbar + ChatBar)
-â”‚   â””â”€â”€ globals.css             # Global styles & KASH design tokens
-â”œâ”€â”€ components/
-â”‚   â”œâ”€â”€ Sidebar.tsx             # Top navbar
-â”‚   â”œâ”€â”€ ChatBar.tsx             # Persistent bottom chat input
-â”‚   â”œâ”€â”€ UploadBox.tsx           # Drag-and-drop CSV uploader
-â”‚   â”œâ”€â”€ TransactionTable.tsx    # shadcn Table-based transaction list
-â”‚   â””â”€â”€ Summary.tsx             # Income / Expense / Net cards
-â”œâ”€â”€ lib/
-â”‚   â”œâ”€â”€ categorize.ts           # Rule-based transaction categorisation
-â”‚   â””â”€â”€ utils.ts                # Shared utilities
-â””â”€â”€ .env.local                  # Your API keys (not committed)
+kash/
++-- app/
+¦   +-- api/
+¦   ¦   +-- upload/route.ts         # CSV parsing & storage
+¦   ¦   +-- files/route.ts          # List / delete uploaded files
+¦   ¦   +-- analyze/route.ts        # Transaction analysis endpoint
+¦   ¦   +-- chat/route.ts           # Gemini AI chat endpoint
+¦   ¦   +-- notes/route.ts          # Transaction notes CRUD
+¦   ¦   +-- budgets/route.ts        # Budget upsert / retrieval
+¦   +-- dashboard/page.tsx          # Financial overview dashboard
+¦   +-- files/page.tsx              # File upload & transaction table
+¦   +-- visualize/page.tsx          # Charts & spending visualisations
+¦   +-- budget/page.tsx             # Budget management page
+¦   +-- chats/page.tsx              # AI chat interface
+¦   +-- sign-in/                    # Clerk sign-in page
+¦   +-- sign-up/                    # Clerk sign-up page
+¦   +-- page.tsx                    # Landing / home page
+¦   +-- layout.tsx                  # Root layout (Navbar + ChatBar)
+¦   +-- globals.css                 # Global styles & design tokens
++-- components/
+¦   +-- NavBar.tsx                  # Top navigation bar
+¦   +-- ChatBar.tsx                 # Persistent bottom chat input
+¦   +-- UploadBox.tsx               # Drag-and-drop CSV uploader
+¦   +-- TransactionTable.tsx        # Transaction list with notes
+¦   +-- StatementCard.tsx           # Uploaded file card
+¦   +-- Summary.tsx                 # Income / Expense / Net cards
+¦   +-- charts/
+¦       +-- MonthlyBarChart.tsx     # Monthly income vs expenses chart
+¦       +-- SpendingPieChart.tsx    # Category spending pie chart
++-- lib/
+¦   +-- categorize.ts               # Rule-based transaction categorisation
+¦   +-- prisma.ts                   # Prisma client singleton
+¦   +-- utils.ts                    # Shared utilities
++-- prisma/
+¦   +-- schema.prisma               # Database schema
++-- .env.local                      # Your API keys (not committed)
 ```
 
 ---
@@ -155,17 +211,16 @@ KASH looks for columns named **Date**, **Description** (or **Narration** / **Mem
 - Parentheses for negatives (`(134.50)`)
 - Various date formats (`2024-04-01`, `01/04/2024`, `Apr 1, 2024`)
 
-If your bank uses different column names, you can adjust the header mapping in `app/api/upload/route.ts`.
+If your bank uses different column names, you can adjust the header mapping in [`app/api/upload/route.ts`](app/api/upload/route.ts).
 
 ---
 
 ## License
 
-MIT â€” free to use, modify, and deploy.
-
+MIT — free to use, modify, and deploy.
 
 ## Deploy on Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+The easiest way to deploy KASH is with the [Vercel Platform](https://vercel.com/new). Make sure to add all environment variables from `.env.local` to your Vercel project settings.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Check out the [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
