@@ -205,7 +205,7 @@ export default function DashboardPage() {
                   {savingsRate}%
                 </p>
                 <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>
-                  {Number(savingsRate) >= 20 ? "Great saving habit! Keep it up." : Number(savingsRate) >= 0 ? "Room to improve — aim for 20%+" : "Expenses exceed income this period."}
+                  {Number(savingsRate) >= 20 ? "Great saving habit! Keep it up." : Number(savingsRate) >= 0 ? "Room to improve - aim for 20%+" : "Expenses exceed income this period."}
                 </p>
               </div>
               <div className="w-32 h-2 rounded-full overflow-hidden" style={{ background: "var(--bg-hover)" }}>
@@ -385,7 +385,7 @@ export default function DashboardPage() {
                     <p className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: "var(--text-muted)" }}>⚠️ AI-Detected Anomalies</p>
                     {(aiResult.anomalies ?? []).length === 0 ? (
                       <p className="text-sm px-4 py-3 rounded-xl" style={{ background: "rgba(16,185,129,0.06)", border: "1px solid rgba(16,185,129,0.15)", color: "var(--green)" }}>
-                        No anomalies detected — your spending looks consistent!
+                        No anomalies detected - your spending looks consistent!
                       </p>
                     ) : (
                       <div className="space-y-2">

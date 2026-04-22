@@ -199,7 +199,7 @@ export default function BudgetPage() {
         {/* Add budget form */}
         {showForm && (
           <div className="rounded-2xl border p-5 mb-6" style={{ background: "var(--bg-surface)", borderColor: "var(--accent)", boxShadow: "0 0 0 1px rgba(59,130,246,0.2)" }}>
-            <h3 className="text-sm font-semibold mb-4" style={{ color: "var(--text-primary)" }}>New Budget — {fmtMonthLabel(month)}</h3>
+            <h3 className="text-sm font-semibold mb-4" style={{ color: "var(--text-primary)" }}>New Budget - {fmtMonthLabel(month)}</h3>
             <div className="flex items-end gap-3 flex-wrap">
               <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>Category</label>
@@ -354,7 +354,7 @@ export default function BudgetPage() {
         {!loading && files.length > 0 && (
           <div className="mt-8 rounded-2xl border p-5" style={{ background: "var(--bg-surface)", borderColor: "var(--kash-border)" }}>
             <h3 className="text-sm font-semibold mb-4" style={{ color: "var(--text-primary)" }}>
-              Unbudgeted Spending — {fmtMonthLabel(month)}
+              Unbudgeted Spending - {fmtMonthLabel(month)}
             </h3>
             <div className="space-y-2">
               {Object.entries(spentByCategory)

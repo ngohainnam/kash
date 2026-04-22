@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({ notes });
 }
 
-// POST /api/notes — create or update a note (empty note = delete)
+// POST /api/notes - create or update a note (empty note = delete)
 export async function POST(req: NextRequest) {
   const { userId } = await auth();
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

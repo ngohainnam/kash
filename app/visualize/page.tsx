@@ -168,7 +168,7 @@ export default function VisualizePage() {
         body: txs.slice(0, 100).map((t) => [
           t.date,
           t.description.slice(0, 45),
-          t.category ?? "—",
+          t.category ?? "-",
           `${t.amount >= 0 ? "+" : "-"}$${Math.abs(t.amount).toFixed(2)}`,
         ]),
         styles: { fontSize: 8 },
@@ -310,7 +310,7 @@ export default function VisualizePage() {
                   Spending by Category
                 </h2>
                 <p className="text-xs mb-6" style={{ color: "var(--text-muted)" }}>
-                  Where your money went — expense categories only
+                  Where your money went - expense categories only
                 </p>
                 {categoryData.length === 0 ? (
                   <p className="text-sm text-center py-12" style={{ color: "var(--text-muted)" }}>No expense data</p>

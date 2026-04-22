@@ -9,7 +9,7 @@ export interface BudgetRecord {
   month: string;
 }
 
-// GET /api/budgets — all budgets for the signed-in user
+// GET /api/budgets - all budgets for the signed-in user
 export async function GET() {
   const { userId } = await auth();
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -18,7 +18,7 @@ export async function GET() {
   return NextResponse.json({ budgets });
 }
 
-// POST /api/budgets — upsert a budget entry
+// POST /api/budgets - upsert a budget entry
 export async function POST(req: NextRequest) {
   const { userId } = await auth();
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

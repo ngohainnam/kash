@@ -80,7 +80,7 @@ export default function StatementCard({ file, isOpen, isDeleting, onToggle, onDe
           </div>
         </div>
 
-        {/* Summary pills — hidden on mobile */}
+        {/* Summary pills - hidden on mobile */}
         <div className="hidden md:flex items-center gap-2 flex-shrink-0">
           <div
             className="flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-lg"

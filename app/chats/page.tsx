@@ -81,7 +81,7 @@ function ChatContent() {
       const aiText = json.text ?? json.error ?? "Something went wrong.";
       setMessages((prev) => [...prev, { role: "ai", text: aiText }]);
     } catch {
-      setMessages((prev) => [...prev, { role: "ai", text: "Network error — please try again." }]);
+      setMessages((prev) => [...prev, { role: "ai", text: "Network error - please try again." }]);
     } finally {
       setLoading(false);
     }

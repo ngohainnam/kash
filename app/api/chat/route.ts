@@ -38,7 +38,7 @@ function buildSystemPrompt(transactions: Transaction[], fileNames: string[]): st
   // Full transaction list (capped at 300 to stay within token limits)
   const txList = transactions
     .slice(0, 300)
-    .map((t) => `${t.date} | ${t.description} | ${t.category ?? "—"} | $${t.amount.toFixed(2)}`)
+    .map((t) => `${t.date} | ${t.description} | ${t.category ?? "-"} | $${t.amount.toFixed(2)}`)
     .join("\n");
 
   return `You are KASH, a smart and friendly personal finance AI assistant.
@@ -62,7 +62,7 @@ ${topExpenses || "  (none)"}
 
 ## Full transaction list (date | description | category | amount)
 ${txList}
-${transactions.length > 300 ? `\n(${transactions.length - 300} more transactions not shown — summarise from above data)` : ""}
+${transactions.length > 300 ? `\n(${transactions.length - 300} more transactions not shown - summarise from above data)` : ""}
 
 ## Instructions
 - Always base your answers on the transaction data above.
@@ -139,7 +139,7 @@ export async function POST(req: NextRequest) {
 
     if (message.includes("429") || message.includes("RESOURCE_EXHAUSTED")) {
       return NextResponse.json(
-        { error: "Rate limit reached — please wait a moment and try again." },
+        { error: "Rate limit reached - please wait a moment and try again." },
         { status: 429 }
       );
     }
