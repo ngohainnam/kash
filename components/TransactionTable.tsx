@@ -37,7 +37,7 @@ export default function TransactionTable({ transactions }: Props) {
               minimumFractionDigits: 2,
               maximumFractionDigits: 2,
             })}`;
-            const category = (tx as Transaction & { category?: string }).category;
+            const category = tx.category;
             return (
               <TableRow key={i} className="kash-table-row">
                 <TableCell className="kash-td-muted">{tx.date}</TableCell>

@@ -7,6 +7,7 @@ export interface Transaction {
   date: string;
   description: string;
   amount: number;
+  category?: string;
 }
 
 const REQUIRED_HEADERS = ["Date", "Description", "Amount"];
