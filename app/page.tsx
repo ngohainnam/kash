@@ -11,7 +11,6 @@ import {
   Sparkles,
   Target,
   PieChart,
-  StickyNote,
   ShieldCheck,
   LayoutDashboard,
 } from "lucide-react";
@@ -26,14 +25,6 @@ import {
 } from "@/components/ui/table";
 
 const FEATURES = [
-  {
-    icon: UploadCloud,
-    title: "Smart CSV Import",
-    desc: "Drop any bank statement CSV. KASH auto-detects columns, strips symbols, and loads your transactions instantly.",
-    color: "#3b82f6",
-    glow: "rgba(59,130,246,0.12)",
-    href: "/files",
-  },
   {
     icon: LayoutDashboard,
     title: "Financial Dashboard",
@@ -57,14 +48,6 @@ const FEATURES = [
     color: "#f59e0b",
     glow: "rgba(245,158,11,0.12)",
     href: "/budget",
-  },
-  {
-    icon: StickyNote,
-    title: "Transaction Notes",
-    desc: "Annotate any transaction with a personal note — 'reimbursed', 'tax deductible', whatever helps you remember.",
-    color: "#ec4899",
-    glow: "rgba(236,72,153,0.12)",
-    href: "/files",
   },
   {
     icon: Zap,
