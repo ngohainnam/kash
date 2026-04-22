@@ -52,7 +52,7 @@ const FEATURES = [
   {
     icon: Zap,
     title: "AI Chat",
-    desc: "Ask anything in plain English — 'What did I spend on food last month?' — and get a concise, accurate answer.",
+    desc: "Ask anything in plain English - 'What did I spend on food last month?' - and get a concise, accurate answer.",
     color: "#f97316",
     glow: "rgba(249,115,22,0.12)",
     href: "/chats",
@@ -60,7 +60,7 @@ const FEATURES = [
 ];
 
 const DEMO_ROWS = [
-  { date: "Apr 01", description: "Salary — April", category: "Income", amount: 5200 },
+  { date: "Apr 01", description: "Salary - April", category: "Income", amount: 5200 },
   { date: "Apr 03", description: "Woolworths Supermarket", category: "Food", amount: -134.5 },
   { date: "Apr 05", description: "Netflix Subscription", category: "Subscriptions", amount: -22.99 },
   { date: "Apr 07", description: "Uber Eats", category: "Food", amount: -38.7 },
@@ -96,7 +96,7 @@ const WORKFLOW = [
   {
     step: "04",
     title: "Ask the AI anything",
-    desc: "Chat with Gemini — it has full context of your transactions and answers in plain English.",
+    desc: "Chat with Gemini - it has full context of your transactions and answers in plain English.",
     icon: Sparkles,
     color: "#8b5cf6",
     href: "/chats",
@@ -125,7 +125,7 @@ export default function Home() {
           </h1>
 
           <p className="kash-sub">
-            Upload a bank CSV and instantly get a full picture — spending charts,
+            Upload a bank CSV and instantly get a full picture - spending charts,
             budget tracking, transaction notes, and an AI that answers any
             question about your money.
           </p>
@@ -235,7 +235,7 @@ export default function Home() {
               </h2>
               <p className="kash-section-sub">
                 Every row is auto-categorised, colour-coded, and ready for AI
-                analysis — plus you can attach personal notes to any transaction.
+                analysis - plus you can attach personal notes to any transaction.
               </p>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "0.75rem" }}>
                 <Link href="/files" className="kash-btn-primary kash-link-btn kash-demo-btn">
