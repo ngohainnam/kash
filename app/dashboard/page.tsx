@@ -151,7 +151,7 @@ export default function DashboardPage() {
 
         {/* Header */}
         <div className="flex items-center gap-3 mb-8">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "var(--accent-glow)" }}>
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: "var(--accent-glow)" }}>
             <LayoutDashboard size={18} style={{ color: "var(--accent)" }} />
           </div>
           <div>
@@ -187,7 +187,7 @@ export default function DashboardPage() {
               {summaryCards.map(({ label, value, color, icon: Icon, bg }) => (
                 <div key={label} className="rounded-2xl border px-5 py-4" style={{ background: "var(--bg-surface)", borderColor: "var(--kash-border)" }}>
                   <div className="flex items-center gap-2 mb-3">
-                    <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: bg }}>
+                    <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style={{ background: bg }}>
                       <Icon size={14} style={{ color }} />
                     </div>
                     <p className="text-xs uppercase tracking-wide font-semibold" style={{ color: "var(--text-muted)" }}>{label}</p>
@@ -277,7 +277,7 @@ export default function DashboardPage() {
                           <p className="text-sm truncate font-medium" style={{ color: "var(--text-primary)" }}>{t.description}</p>
                           <p className="text-xs" style={{ color: "var(--text-muted)" }}>{t.date}{t.category ? ` · ${t.category}` : ""}</p>
                         </div>
-                        <span className="text-sm font-bold tabular-nums flex-shrink-0" style={{ color: isPos ? "var(--green)" : "var(--red)" }}>
+                        <span className="text-sm font-bold tabular-nums shrink-0" style={{ color: isPos ? "var(--green)" : "var(--red)" }}>
                           {isPos ? "+" : "-"}{fmt(Math.abs(t.amount))}
                         </span>
                       </div>
@@ -304,7 +304,7 @@ export default function DashboardPage() {
                         <p className="text-sm font-medium truncate" style={{ color: "var(--text-primary)" }}>{t.description}</p>
                         <p className="text-xs mt-0.5" style={{ color: "#f59e0b", opacity: 0.8 }}>{t.date} · {t.reason}</p>
                       </div>
-                      <span className="text-sm font-bold tabular-nums flex-shrink-0" style={{ color: "var(--red)" }}>
+                      <span className="text-sm font-bold tabular-nums shrink-0" style={{ color: "var(--red)" }}>
                         -{fmt(Math.abs(t.amount))}
                       </span>
                     </div>
@@ -373,7 +373,7 @@ export default function DashboardPage() {
                     <div className="space-y-2">
                       {(aiResult.savings ?? []).map((tip, i) => (
                         <div key={i} className="flex items-start gap-2.5 px-4 py-3 rounded-xl" style={{ background: "rgba(16,185,129,0.06)", border: "1px solid rgba(16,185,129,0.15)" }}>
-                          <CheckCircle2 size={14} className="mt-0.5 flex-shrink-0" style={{ color: "var(--green)" }} />
+                          <CheckCircle2 size={14} className="mt-0.5 shrink-0" style={{ color: "var(--green)" }} />
                           <p className="text-sm leading-relaxed" style={{ color: "var(--text-primary)" }}>{tip}</p>
                         </div>
                       ))}
@@ -393,7 +393,7 @@ export default function DashboardPage() {
                           <div key={i} className="px-4 py-3 rounded-xl" style={{ background: "rgba(245,158,11,0.06)", border: "1px solid rgba(245,158,11,0.15)" }}>
                             <div className="flex items-center justify-between mb-0.5">
                               <p className="text-sm font-medium truncate mr-2" style={{ color: "var(--text-primary)" }}>{a.description}</p>
-                              <span className="text-sm font-bold flex-shrink-0" style={{ color: "var(--red)" }}>-{fmt(a.amount)}</span>
+                              <span className="text-sm font-bold shrink-0" style={{ color: "var(--red)" }}>-{fmt(a.amount)}</span>
                             </div>
                             <p className="text-xs" style={{ color: "#f59e0b", opacity: 0.8 }}>{a.date} · {a.reason}</p>
                           </div>

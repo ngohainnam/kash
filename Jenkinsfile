@@ -114,6 +114,7 @@
                           -Dsonar.login=%SONAR_TOKEN% ^
                           -Dsonar.sources=. ^
                           -Dsonar.exclusions=node_modules/**,test/**,.next/**,prisma/migrations/**,coverage/**,junit.xml,audit-report.json,audit-report.txt,Jenkinsfile ^
+                          -Dsonar.test.inclusions=**/__tests__/**/*.ts,**/__tests__/**/*.tsx ^
                           -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
                     '''
                 }
