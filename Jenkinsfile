@@ -46,7 +46,7 @@
                 bat 'npm --version'
                 bat 'npm ci --loglevel=error'
                 bat 'npx prisma generate'
-                bat 'npm install -g vercel'
+                bat 'where vercel 2>NUL || npm install -g vercel'
                 withCredentials([
                     string(credentialsId: 'DATABASE_URL',                      variable: 'DATABASE_URL'),
                     string(credentialsId: 'CLERK_SECRET_KEY',                  variable: 'CLERK_SECRET_KEY'),
