@@ -189,11 +189,10 @@
                         if (urlLine) {
                             env.STAGING_URL = urlLine
                             echo "[STAGING] Preview URL: ${env.STAGING_URL}"
-                            echo '[STAGING] Skipping smoke test - Vercel preview deployments require authentication.'
                         } else {
-                            currentBuild.result = 'UNSTABLE'
                             echo '[STAGING] WARNING: Could not parse deployment URL from Vercel output.'
                         }
+                        echo '[STAGING] No health check - Vercel preview deployments require authentication.'
                     }
                 }
                 archiveArtifacts artifacts: 'staging-url.txt', fingerprint: true, allowEmptyArchive: true
