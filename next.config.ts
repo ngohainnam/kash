@@ -9,9 +9,12 @@ export default withSentryConfig(nextConfig, {
   // For all available options, see:
   // https://www.npmjs.com/package/@sentry/webpack-plugin#options
 
-  org: "swinburne-university-of-tec-fl",
+  org: process.env.SENTRY_ORG ?? "swinburne-university-of-tec-fl",
 
-  project: "kash",
+  project: process.env.SENTRY_PROJECT ?? "kash",
+
+  // Auth token for uploading source maps. Set SENTRY_AUTH_TOKEN in CI.
+  authToken: process.env.SENTRY_AUTH_TOKEN,
 
   // Only print logs for uploading source maps in CI
   silent: !process.env.CI,

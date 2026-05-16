@@ -51,9 +51,14 @@
                     string(credentialsId: 'DATABASE_URL',                      variable: 'DATABASE_URL'),
                     string(credentialsId: 'CLERK_SECRET_KEY',                  variable: 'CLERK_SECRET_KEY'),
                     string(credentialsId: 'NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY', variable: 'NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY'),
-                    string(credentialsId: 'GEMINI_API_KEY',                    variable: 'GEMINI_API_KEY')
+                    string(credentialsId: 'GEMINI_API_KEY',                    variable: 'GEMINI_API_KEY'),
+                    string(credentialsId: 'SENTRY_AUTH_TOKEN',                 variable: 'SENTRY_AUTH_TOKEN')
                 ]) {
-                    bat 'npm run build'
+                    // SENTRY_RELEASE ties this build's sourcemaps to the release created later in Monitoring.
+                    bat '''
+                        set SENTRY_RELEASE=%APP_NAME%@%BUILD_NUMBER%
+                        npm run build
+                    '''
                 }
                 archiveArtifacts artifacts: '.next/BUILD_ID', fingerprint: true, allowEmptyArchive: true
             }
@@ -283,13 +288,20 @@ Time    : ${new Date().toString()}
                     withCredentials([
                         string(credentialsId: 'SENTRY_AUTH_TOKEN', variable: 'SENTRY_AUTH_TOKEN')
                     ]) {
-                        bat """
-                            where sentry-cli 2>NUL || npm install -g @sentry/cli
-                            sentry-cli releases new "${sentryVersion}" --org=%SENTRY_ORG% --project=%SENTRY_PROJECT% || exit /b 0
-                            sentry-cli releases set-commits "${sentryVersion}" --auto --org=%SENTRY_ORG% || exit /b 0
-                            sentry-cli releases finalize "${sentryVersion}" --org=%SENTRY_ORG% || exit /b 0
-                            sentry-cli releases deploys "${sentryVersion}" new -e production --org=%SENTRY_ORG% || exit /b 0
-                        """
+                        bat 'where sentry-cli 2>NUL || npm install -g @sentry/cli'
+
+                        // Associate this release with sourcemaps uploaded during npm run build.
+                        bat "sentry-cli releases new \"${sentryVersion}\" --org=%SENTRY_ORG% --project=%SENTRY_PROJECT%"
+
+                        // set-commits requires a full (non-shallow) git clone; warn but don't fail if unavailable.
+                        def commitRc = bat(returnStatus: true,
+                            script: "sentry-cli releases set-commits \"${sentryVersion}\" --auto --org=%SENTRY_ORG%")
+                        if (commitRc != 0) {
+                            echo "[SENTRY] Warning: set-commits failed (rc=${commitRc}). Ensure a full git clone for commit tracking."
+                        }
+
+                        bat "sentry-cli releases finalize \"${sentryVersion}\" --org=%SENTRY_ORG%"
+                        bat "sentry-cli releases deploys \"${sentryVersion}\" new -e production --org=%SENTRY_ORG%"
                     }
                     echo "[MONITORING] Sentry release '${sentryVersion}' registered in production."
                 }
