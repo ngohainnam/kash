@@ -195,7 +195,7 @@
                         echo '[STAGING] No health check - Vercel preview deployments require authentication.'
                     }
                 }
-                archiveArtifacts artifacts: 'staging-url.txt', fingerprint: true, allowEmptyArchive: true
+                archiveArtifacts artifacts: 'staging-url.txt,staging-url-parsed.txt', fingerprint: true, allowEmptyArchive: true
             }
 
             post {
@@ -255,7 +255,7 @@ URL     : ${env.PRODUCTION_URL ?: 'N/A'}
 Time    : ${new Date().toString()}
 """
                 }
-                archiveArtifacts artifacts: 'production-url.txt,release-metadata.txt', fingerprint: true, allowEmptyArchive: true
+                archiveArtifacts artifacts: 'production-url.txt,production-url-parsed.txt,release-metadata.txt', fingerprint: true, allowEmptyArchive: true
             }
 
             post {
@@ -283,7 +283,7 @@ Time    : ${new Date().toString()}
                         string(credentialsId: 'SENTRY_AUTH_TOKEN', variable: 'SENTRY_AUTH_TOKEN')
                     ]) {
                         bat """
-                            npm install -g @sentry/cli
+                            where sentry-cli 2>NUL || npm install -g @sentry/cli
                             sentry-cli releases new "${sentryVersion}" --org=%SENTRY_ORG% --project=%SENTRY_PROJECT% || exit /b 0
                             sentry-cli releases set-commits "${sentryVersion}" --auto --org=%SENTRY_ORG% || exit /b 0
                             sentry-cli releases finalize "${sentryVersion}" --org=%SENTRY_ORG% || exit /b 0
