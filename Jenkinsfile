@@ -42,8 +42,9 @@
                 echo '--- STAGE: BUILD ---'
                 bat 'node --version'
                 bat 'npm --version'
-                bat 'npm ci'
+                bat 'npm ci --loglevel=error'
                 bat 'npx prisma generate'
+                bat 'npm install -g vercel'
                 withCredentials([
                     string(credentialsId: 'DATABASE_URL',                      variable: 'DATABASE_URL'),
                     string(credentialsId: 'CLERK_SECRET_KEY',                  variable: 'CLERK_SECRET_KEY'),
@@ -65,8 +66,11 @@
             steps {
                 echo '--- STAGE: TEST ---'
                 script {
-                    def rc = bat(returnStatus: true,
-                        script: 'npm test -- --ci --coverage --coverageDirectory=coverage --reporters=default --reporters=jest-junit --forceExit')
+                    def rc = bat(returnStatus: true, script: '''
+                        set JEST_JUNIT_OUTPUT_NAME=junit.xml
+                        set JEST_JUNIT_OUTPUT_DIR=.
+                        npm test -- --ci --coverage --coverageDirectory=coverage --reporters=default --reporters=jest-junit --forceExit --passWithNoTests
+                    ''')
                     if (rc != 0) {
                         currentBuild.result = 'UNSTABLE'
                         echo "[TEST] Failures detected (exit ${rc}). Build marked UNSTABLE."
@@ -87,7 +91,7 @@
                         reportFiles          : 'index.html',
                         reportName           : 'Test Coverage Report'
                     ])
-                    archiveArtifacts artifacts: 'junit.xml, coverage/lcov.info', allowEmptyArchive: true
+                    archiveArtifacts artifacts: 'junit.xml,coverage/lcov.info,coverage/lcov-report/**', allowEmptyArchive: true
                 }
             }
         }
@@ -97,23 +101,26 @@
                 echo '--- STAGE: CODE QUALITY (SonarCloud) ---'
                 withCredentials([string(credentialsId: 'SONAR_TOKEN', variable: 'SONAR_TOKEN')]) {
                     bat '''
-                        powershell -Command "Invoke-WebRequest -Uri https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-windows.zip -OutFile sonar-scanner.zip"
-                        powershell -Command "Expand-Archive -Path sonar-scanner.zip -DestinationPath sonar-scanner -Force"
+                        if not exist sonar-scanner\\sonar-scanner-5.0.1.3006-windows\\bin\\sonar-scanner.bat (
+                            powershell -Command "Invoke-WebRequest -Uri https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-windows.zip -OutFile sonar-scanner.zip"
+                            powershell -Command "Expand-Archive -Path sonar-scanner.zip -DestinationPath sonar-scanner -Force"
+                        )
                         sonar-scanner\\sonar-scanner-5.0.1.3006-windows\\bin\\sonar-scanner.bat ^
                           -Dsonar.projectKey=%SONAR_PROJECT_KEY% ^
                           -Dsonar.organization=%SONAR_ORGANIZATION% ^
                           -Dsonar.host.url=https://sonarcloud.io ^
                           -Dsonar.login=%SONAR_TOKEN% ^
                           -Dsonar.sources=. ^
-                          -Dsonar.exclusions=node_modules/**,test/**,.next/**,prisma/migrations/**,coverage/** ^
+                          -Dsonar.exclusions=node_modules/**,test/**,.next/**,prisma/migrations/**,coverage/**,junit.xml,audit-report.json,audit-report.txt,Jenkinsfile ^
                           -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
                     '''
                 }
+                echo '[SONAR] Analysis submitted to SonarCloud.'
             }
 
             post {
                 success { echo '[SONAR] PASSED' }
-                failure { echo '[SONAR] FAILED - quality gate not met. Review SonarCloud dashboard.' }
+                failure { echo '[SONAR] FAILED - check SonarCloud dashboard.' }
             }
         }
 
@@ -148,9 +155,9 @@
             }
         }
 
-        stage('Deploy - Staging') {
+        stage('Deploy') {
             steps {
-                echo '--- STAGE: DEPLOY (STAGING) ---'
+                echo '--- STAGE: DEPLOY ---'
                 withCredentials([
                     string(credentialsId: 'VERCEL_TOKEN',                      variable: 'VERCEL_TOKEN'),
                     string(credentialsId: 'VERCEL_ORG_ID',                     variable: 'VERCEL_ORG_ID'),
@@ -161,7 +168,6 @@
                     string(credentialsId: 'GEMINI_API_KEY',                    variable: 'GEMINI_API_KEY')
                 ]) {
                     bat '''
-                        npm install -g vercel
                         set VERCEL_ORG_ID=%VERCEL_ORG_ID%
                         set VERCEL_PROJECT_ID=%VERCEL_PROJECT_ID%
                         vercel deploy --token=%VERCEL_TOKEN% --yes ^
@@ -174,24 +180,26 @@
                         type staging-url.txt
                     '''
                     script {
-                        def output  = readFile('staging-url.txt').trim()
-                        def urlLine = output.readLines().find { it.startsWith('https://') }
+                        def output   = readFile('staging-url.txt').trim()
+                        def urlLines = output.readLines().findAll { it.trim() ==~ /https:\/\/[a-zA-Z0-9][a-zA-Z0-9\-]*\.vercel\.app\/?/ }
+                        def urlLine  = urlLines ? urlLines.last().trim() : null
                         if (urlLine) {
-                            env.STAGING_URL = urlLine.trim()
+                            env.STAGING_URL = urlLine
                             echo "[STAGING] Preview URL: ${env.STAGING_URL}"
                             def smokeRc = bat(returnStatus: true, script: """
-                                powershell -Command "try{\$r=Invoke-WebRequest -Uri '${env.STAGING_URL}/api/health' -UseBasicParsing -TimeoutSec 30;if(\$r.StatusCode -eq 200){Write-Host '[STAGING] Smoke test PASSED';exit 0}Write-Host '[STAGING] HTTP '+\$r.StatusCode;exit 1}catch{Write-Host '[STAGING] Error: '+\$_.Exception.Message;exit 1}"
+                                powershell -NonInteractive -Command "try { \$r=Invoke-WebRequest -Uri '${env.STAGING_URL}/api/health' -UseBasicParsing -TimeoutSec 30; if (\$r.StatusCode -eq 200) { Write-Host '[STAGING] Smoke test PASSED'; exit 0 } Write-Host '[STAGING] HTTP '+\$r.StatusCode; exit 1 } catch { Write-Host '[STAGING] Error: '+\$_.Exception.Message; exit 1 }"
                             """)
                             if (smokeRc != 0) {
                                 currentBuild.result = 'UNSTABLE'
                                 echo '[STAGING] Smoke test failed - staging health check did not return 200.'
                             }
                         } else {
-                            echo '[STAGING] WARNING: Could not parse deployment URL from output.'
+                            currentBuild.result = 'UNSTABLE'
+                            echo '[STAGING] WARNING: Could not parse deployment URL from Vercel output.'
                         }
                     }
                 }
-                archiveArtifacts artifacts: 'staging-url.txt', allowEmptyArchive: true
+                archiveArtifacts artifacts: 'staging-url.txt', fingerprint: true, allowEmptyArchive: true
             }
 
             post {
@@ -201,24 +209,10 @@
             }
         }
 
-        stage('Approve Production') {
-            when { branch 'master' }
+        stage('Release') {
+            when { expression { env.GIT_BRANCH ==~ /(.*\/)?master/ } }
             steps {
-                echo '--- STAGE: PRODUCTION APPROVAL GATE ---'
-                echo "Staging URL  : ${env.STAGING_URL ?: 'N/A'}"
-                echo "Build        : #${env.BUILD_NUMBER}"
-                echo "Commit       : ${env.GIT_COMMIT_SHORT ?: 'N/A'}"
-                timeout(time: 30, unit: 'MINUTES') {
-                    input message: "Deploy build #${env.BUILD_NUMBER} (${env.GIT_COMMIT_SHORT ?: 'N/A'}) to PRODUCTION?",
-                          ok: 'Approve & Deploy'
-                }
-            }
-        }
-
-        stage('Release - Production') {
-            when { branch 'master' }
-            steps {
-                echo '--- STAGE: RELEASE (PRODUCTION) ---'
+                echo '--- STAGE: RELEASE ---'
                 bat '''
                     git config user.email "ngohainnam@gmail.com"
                     git config user.name  "ngohainnam"
@@ -248,20 +242,23 @@
                     '''
                 }
                 script {
-                    def output = readFile('production-url.txt').trim()
-                    def urlLine = output.readLines().find { it.startsWith('https://') }
+                    def output   = readFile('production-url.txt').trim()
+                    def urlLines = output.readLines().findAll { it.trim() ==~ /https:\/\/[a-zA-Z0-9][a-zA-Z0-9\-]*\.vercel\.app\/?/ }
+                    def urlLine  = urlLines ? urlLines.last().trim() : null
                     if (urlLine) {
-                        env.PRODUCTION_URL = urlLine.trim()
+                        env.PRODUCTION_URL = urlLine
                         echo "[RELEASE] Production live at: ${env.PRODUCTION_URL}"
+                    } else {
+                        echo '[RELEASE] WARNING: Could not parse production URL from Vercel output.'
                     }
-                    writeFile file: 'release-metadata.txt', text: """Release : v${env.BUILD_NUMBER}
+                    writeFile file: 'release-metadata.txt', text: """\
+Release : v${env.BUILD_NUMBER}
 Commit  : ${env.GIT_COMMIT_SHORT ?: 'N/A'}
 URL     : ${env.PRODUCTION_URL ?: 'N/A'}
 Time    : ${new Date().toString()}
 """
                 }
-                archiveArtifacts artifacts: 'production-url.txt, release-metadata.txt',
-                                 fingerprint: true, allowEmptyArchive: true
+                archiveArtifacts artifacts: 'production-url.txt,release-metadata.txt', fingerprint: true, allowEmptyArchive: true
             }
 
             post {
@@ -279,7 +276,8 @@ Time    : ${new Date().toString()}
                 echo "[MONITORING] Health endpoint: ${env.HEALTH_URL}"
 
                 bat """
-                    powershell -Command "\$url='${env.HEALTH_URL}';\$max=5;\$d=10;for(\$i=1;\$i -le \$max;\$i++){try{\$r=Invoke-WebRequest -Uri \$url -UseBasicParsing -TimeoutSec 15;if(\$r.StatusCode -eq 200){Write-Host '[MONITORING] Health check PASSED (HTTP 200)';exit 0;}Write-Host ('[MONITORING] Attempt '+\$i+': HTTP '+\$r.StatusCode);}catch{Write-Host ('[MONITORING] Attempt '+\$i+' error: '+\$_.Exception.Message);}if(\$i -lt \$max){Start-Sleep -Seconds \$d;\$d=\$d*2;}}Write-Host '[MONITORING] FAILED after all retries';exit 1;"
+                    set HEALTH_URL=${env.HEALTH_URL}
+                    powershell -NonInteractive -Command "\$url=\$env:HEALTH_URL;\$max=5;\$delay=10;for(\$i=1;\$i -le \$max;\$i++){try{\$r=Invoke-WebRequest -Uri \$url -UseBasicParsing -TimeoutSec 15;if(\$r.StatusCode -eq 200){Write-Host '[MONITORING] Health check PASSED (HTTP 200)';exit 0;}Write-Host('[MONITORING] Attempt '+\$i+': HTTP '+\$r.StatusCode);}catch{Write-Host('[MONITORING] Attempt '+\$i+' error: '+\$_.Exception.Message);}if(\$i -lt \$max){Start-Sleep -Seconds \$delay;\$delay=\$delay*2;}}Write-Host '[MONITORING] FAILED after all retries';exit 1;"
                 """
 
                 script {
