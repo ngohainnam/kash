@@ -181,10 +181,11 @@
                           > staging-url.txt 2>&1
                         type staging-url.txt
                     '''
+                    bat '''
+                        node -e "var fs=require('fs'),c=fs.readFileSync('staging-url.txt','utf8'),m=c.match(new RegExp('https://[a-zA-Z0-9][a-zA-Z0-9-]*[.]vercel[.]app'));fs.writeFileSync('staging-url-parsed.txt',m?m[0]:'');"
+                    '''
                     script {
-                        def output   = readFile('staging-url.txt').trim()
-                        def allUrls  = output.findAll(/https:\/\/[a-zA-Z0-9][a-zA-Z0-9\-]*\.vercel\.app/)
-                        def urlLine  = allUrls ? allUrls[-1] : null
+                        def urlLine = readFile('staging-url-parsed.txt').trim()
                         if (urlLine) {
                             env.STAGING_URL = urlLine
                             echo "[STAGING] Preview URL: ${env.STAGING_URL}"
@@ -237,10 +238,11 @@
                         type production-url.txt
                     '''
                 }
+                bat '''
+                    node -e "var fs=require('fs'),c=fs.readFileSync('production-url.txt','utf8'),m=c.match(new RegExp('https://[a-zA-Z0-9][a-zA-Z0-9-]*[.]vercel[.]app'));fs.writeFileSync('production-url-parsed.txt',m?m[0]:'');"
+                '''
                 script {
-                    def output   = readFile('production-url.txt').trim()
-                    def allUrls  = output.findAll(/https:\/\/[a-zA-Z0-9][a-zA-Z0-9\-]*\.vercel\.app/)
-                    def urlLine  = allUrls ? allUrls[-1] : null
+                    def urlLine = readFile('production-url-parsed.txt').trim()
                     if (urlLine) {
                         env.PRODUCTION_URL = urlLine
                         echo "[RELEASE] Production live at: ${env.PRODUCTION_URL}"
