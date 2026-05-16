@@ -76,7 +76,7 @@
                     def rc = bat(returnStatus: true, script: '''
                         set JEST_JUNIT_OUTPUT_NAME=junit.xml
                         set JEST_JUNIT_OUTPUT_DIR=.
-                        npm test -- --ci --coverage --coverageDirectory=coverage --reporters=default --reporters=jest-junit --forceExit --passWithNoTests
+                        npm test -- --ci --coverage --color=false --coverageDirectory=coverage --reporters=default --reporters=jest-junit --forceExit --passWithNoTests
                     ''')
                     if (rc != 0) {
                         currentBuild.result = 'UNSTABLE'
