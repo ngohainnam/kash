@@ -32,8 +32,10 @@
                 script {
                     env.GIT_COMMIT_SHORT = bat(returnStdout: true,
                         script: '@git rev-parse --short HEAD').trim().readLines().last().trim()
+                    env.GIT_BRANCH = bat(returnStdout: true,
+                        script: '@git rev-parse --abbrev-ref HEAD').trim().readLines().last().trim()
                 }
-                echo "Commit: ${env.GIT_COMMIT_SHORT}"
+                echo "Commit: ${env.GIT_COMMIT_SHORT} | Branch: ${env.GIT_BRANCH}"
             }
         }
 
@@ -181,8 +183,8 @@
                     '''
                     script {
                         def output   = readFile('staging-url.txt').trim()
-                        def urlLines = output.readLines().findAll { it.trim() ==~ /https:\/\/[a-zA-Z0-9][a-zA-Z0-9\-]*\.vercel\.app\/?/ }
-                        def urlLine  = urlLines ? urlLines.last().trim() : null
+                        def matcher  = (output =~ /https:\/\/[a-zA-Z0-9][a-zA-Z0-9\-]*\.vercel\.app/)
+                        def urlLine  = matcher ? matcher[-1] : null
                         if (urlLine) {
                             env.STAGING_URL = urlLine
                             echo "[STAGING] Preview URL: ${env.STAGING_URL}"
@@ -243,8 +245,8 @@
                 }
                 script {
                     def output   = readFile('production-url.txt').trim()
-                    def urlLines = output.readLines().findAll { it.trim() ==~ /https:\/\/[a-zA-Z0-9][a-zA-Z0-9\-]*\.vercel\.app\/?/ }
-                    def urlLine  = urlLines ? urlLines.last().trim() : null
+                    def matcher  = (output =~ /https:\/\/[a-zA-Z0-9][a-zA-Z0-9\-]*\.vercel\.app/)
+                    def urlLine  = matcher ? matcher[-1] : null
                     if (urlLine) {
                         env.PRODUCTION_URL = urlLine
                         echo "[RELEASE] Production live at: ${env.PRODUCTION_URL}"
