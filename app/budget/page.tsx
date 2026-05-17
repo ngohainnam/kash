@@ -160,7 +160,7 @@ export default function BudgetPage() {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "var(--accent-glow)" }}>
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: "var(--accent-glow)" }}>
               <Target size={18} style={{ color: "var(--accent)" }} />
             </div>
             <div>

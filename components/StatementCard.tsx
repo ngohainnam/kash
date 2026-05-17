@@ -55,7 +55,7 @@ export default function StatementCard({ file, isOpen, isDeleting, onToggle, onDe
       <div className="flex items-center gap-4 px-5 py-4">
         {/* File icon */}
         <div
-          className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+          className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
           style={{ background: "var(--accent-glow)" }}
         >
           <FileSpreadsheet size={18} style={{ color: "var(--accent)" }} />
@@ -81,7 +81,7 @@ export default function StatementCard({ file, isOpen, isDeleting, onToggle, onDe
         </div>
 
         {/* Summary pills - hidden on mobile */}
-        <div className="hidden md:flex items-center gap-2 flex-shrink-0">
+        <div className="hidden md:flex items-center gap-2 shrink-0">
           <div
             className="flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-lg"
             style={{ background: "rgba(16,185,129,0.1)", color: "var(--green)" }}
@@ -108,7 +108,7 @@ export default function StatementCard({ file, isOpen, isDeleting, onToggle, onDe
         </div>
 
         {/* Action buttons */}
-        <div className="flex items-center gap-1 flex-shrink-0">
+        <div className="flex items-center gap-1 shrink-0">
           <button
             onClick={onToggle}
             className="w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-150"
